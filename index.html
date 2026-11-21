@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Celestia Studio x Vivian | แบบสำรวจความคิดเห็นและประสบการณ์ใช้งาน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&family=Quicksand:wght@600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Ambient soft pastel background shapes & subtle floating particles -->
+  <div class="bg-ambient" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+  <canvas id="particleCanvas" class="particle-canvas" aria-hidden="true"></canvas>
+  <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true" hidden></canvas>
+
+  <!-- Sticky Top Navigation & Progress -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand-mini">
+        <span class="brand-dot" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" />
+          </svg>
+        </span>
+        <span class="brand-name">Celestia Studio</span>
+        <span class="brand-sep" aria-hidden="true">/</span>
+        <span class="brand-sub">Vivian AI</span>
+      </div>
+
+      <nav class="mode-tabs" role="tablist" aria-label="สลับมุมมอง">
+        <div class="tab-glider" id="tabGlider" aria-hidden="true"></div>
+        <button
+          type="button"
+          class="mode-tab is-active"
+          id="tabBtnForm"
+          role="tab"
+          aria-selected="true"
+          aria-controls="viewForm"
+          data-tab="form"
+        >
+          <span>แบบฟอร์มสำรวจ</span>
+        </button>
+        <button
+          type="button"
+          class="mode-tab"
+          id="tabBtnStats"
+          role="tab"
+          aria-selected="false"
+          aria-controls="viewStats"
+          data-tab="stats"
+        >
+          <span>สถิติ &amp; ค่า SD</span>
+          <span class="badge-count" id="navResponseCount">0</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Form Progress Ribbon -->
+    <div class="progress-track" id="progressTrack" aria-label="ความคืบหน้าการทำแบบสอบถาม">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <!-- ==================== VIEW 1: SURVEY FORM ==================== -->
+    <section id="viewForm" class="view-panel is-active" role="tabpanel" aria-labelledby="tabBtnForm">
+      <!-- Hero Banner -->
+      <section class="hero-card reveal-on-scroll">
+        <div class="hero-text">
+          <div class="studio-pill">
+            <span>Celestia Studio Feedback</span>
+          </div>
+          <h1>แบบสำรวจประสบการณ์ <span class="highlight-pink">น้อง Vivian</span></h1>
+          <p class="hero-desc">
+            ร่วมแบ่งปันประสบการณ์และความคิดเห็นของคุณ เพื่อช่วยทีม <strong>Celestia Studio</strong>
+            พัฒนา <strong>Vivian</strong> (AI Companion ของเรา) ให้น่ารัก เป็นธรรมชาติ และตอบโจทย์คุณที่สุด
+          </p>
+          <div class="hero-meta">
+            <span class="meta-chip">ใช้เวลาประมาณ 2 นาที</span>
+            <span class="meta-chip" id="progressLabel">ความคืบหน้า 0 / 7 หมวด</span>
+          </div>
+        </div>
+      </section>
+
+      <form id="surveyForm" novalidate>
+        <!-- ===== SECTION 0 (TOP): CONSENT ===== -->
+        <article class="form-card consent-card reveal-on-scroll" data-section="consent">
+          <div class="card-head">
+            <span class="step-badge badge-consent">ข้อตกลง</span>
+            <div>
+              <h2>ความยินยอมในการเปิดเผยข้อมูล <span class="req">*</span></h2>
+              <p class="card-sub">
+                คุณยินยอมให้เปิดเผยข้อมูลคำตอบในแบบสอบถามนี้ เพื่อนำไปวิเคราะห์และพัฒนาโปรเจกต์
+                <strong>Vivian</strong> สำหรับ <strong>Celestia Studio</strong> หรือไม่?
+              </p>
+            </div>
+          </div>
+
+          <div class="choice-grid cols-2">
+            <label class="choice-card radio-card consent-yes">
+              <input type="radio" name="consent" value="ยินยอม" required />
+              <span class="choice-control" aria-hidden="true"></span>
+              <span class="choice-body">
+                <span class="choice-title">ยินยอมเปิดเผยข้อมูล</span>
+                <span class="choice-desc">อนุญาตให้ Celestia Studio นำข้อมูลไปพัฒนาต่อ</span>
+              </span>
+            </label>
+
+            <label class="choice-card radio-card consent-no">
+              <input type="radio" name="consent" value="ไม่ยินยอม" />
+              <span class="choice-control" aria-hidden="true"></span>
+              <span class="choice-body">
+                <span class="choice-title">ไม่ยินยอมเปิดเผยข้อมูล</span>
+                <span class="choice-desc">บันทึกไว้ในหน้าสรุปโดยไม่นำไปใช้พัฒนาต่อ</span>
+              </span>
+            </label>
+          </div>
+          <p class="consent-note" id="consentNotice" hidden>
+            รับทราบค่ะ ข้อมูลชุดนี้จะถูกทำเครื่องหมายว่า “ไม่ยินยอมเปิดเผยเพื่อการพัฒนา” ในระบบสถิติ
+          </p>
+          <p class="field-error" id="err-consent" role="alert"></p>
+        </article>
+
+        <!-- ===== SECTION 1: DEMOGRAPHICS (AGE & GENDER) ===== -->
+        <article class="form-card reveal-on-scroll" data-section="demographics">
+          <div class="card-head">
+            <span class="step-badge">ส่วนที่ 1</span>
+            <div>
+              <h2>ข้อมูลทั่วไปของผู้ตอบแบบสอบถาม</h2>
+              <p class="card-sub">สามารถกรอกอายุจริง เลือกช่วงอายุ หรือเลือก “ไม่ระบุ” ได้ตามสะดวก</p>
+            </div>
+          </div>
+
+          <!-- Age: Write-in + Age Range + Prefer not to say -->
+          <div class="question-block">
+            <label class="q-label" for="ageWriteIn">1.1 อายุของคุณ <span class="req">*</span></label>
+            <div class="age-composer">
+              <div class="writein-age-wrap" id="ageInputGroup">
+                <input
+                  type="number"
+                  id="ageWriteIn"
+                  name="ageExact"
+                  min="5"
+                  max="110"
+                  inputmode="numeric"
+                  placeholder="พิมพ์อายุเป็นตัวเลข เช่น 21"
+                  class="text-input"
+                />
+                <span class="input-unit">ปี</span>
+              </div>
+
+              <label class="choice-pill" id="ageUnspecifiedWrap">
+                <input type="checkbox" id="ageUnspecified" name="ageUnspecified" value="ไม่ระบุ" />
+                <span class="pill-check" aria-hidden="true"></span>
+                <span>ไม่ระบุอายุ</span>
+              </label>
+            </div>
+
+            <p class="sub-hint">หรือกดเลือกช่วงอายุโดยประมาณ (เรทอายุ):</p>
+            <div class="chip-group" id="ageRangeGroup">
+              <label class="range-chip">
+                <input type="radio" name="ageRange" value="ต่ำกว่า 18 ปี" />
+                <span>ต่ำกว่า 18 ปี</span>
+              </label>
+              <label class="range-chip">
+                <input type="radio" name="ageRange" value="18-24 ปี" />
+                <span>18-24 ปี</span>
+              </label>
+              <label class="range-chip">
+                <input type="radio" name="ageRange" value="25-34 ปี" />
+                <span>25-34 ปี</span>
+              </label>
+              <label class="range-chip">
+                <input type="radio" name="ageRange" value="35-44 ปี" />
+                <span>35-44 ปี</span>
+              </label>
+              <label class="range-chip">
+                <input type="radio" name="ageRange" value="45 ปีขึ้นไป" />
+                <span>45 ปีขึ้นไป</span>
+              </label>
+            </div>
+            <p class="field-error" id="err-age" role="alert"></p>
+          </div>
+
+          <!-- Gender -->
+          <div class="question-block spaced-block">
+            <span class="q-label">1.2 เพศ <span class="req">*</span></span>
+            <div class="choice-grid cols-4">
+              <label class="choice-card radio-card compact">
+                <input type="radio" name="gender" value="ชาย" required />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">ชาย</span></span>
+              </label>
+              <label class="choice-card radio-card compact">
+                <input type="radio" name="gender" value="หญิง" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">หญิง</span></span>
+              </label>
+              <label class="choice-card radio-card compact">
+                <input type="radio" name="gender" value="อื่น ๆ" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">อื่น ๆ</span></span>
+              </label>
+              <label class="choice-card radio-card compact">
+                <input type="radio" name="gender" value="ไม่ระบุ" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">ไม่ระบุ</span></span>
+              </label>
+            </div>
+
+            <div class="expand-writein" id="genderOtherWrap" hidden>
+              <input
+                type="text"
+                id="genderOtherText"
+                name="genderOtherText"
+                class="text-input"
+                placeholder="โปรดระบุเพศเพิ่มเติม (ไม่บังคับ)"
+              />
+            </div>
+            <p class="field-error" id="err-gender" role="alert"></p>
+          </div>
+        </article>
+
+        <!-- ===== SECTION 2: AI CHATBOT / COMPANION & VIVIAN EXPERIENCE ===== -->
+        <article class="form-card reveal-on-scroll" data-section="ai-experience">
+          <div class="card-head">
+            <span class="step-badge">ส่วนที่ 2</span>
+            <div>
+              <h2>ประสบการณ์ใช้งาน AI Chatbot &amp; น้อง Vivian</h2>
+              <p class="card-sub">
+                เคยใช้งาน AI เจ้าไหนมาบ้าง (ติ๊กเลือกได้มากกว่า 1 ข้อ) และความรู้สึกที่มีต่อ <strong>Vivian</strong> ของ Celestia Studio
+              </p>
+            </div>
+          </div>
+
+          <div class="question-block">
+            <span class="q-label">2.1 AI Chatbot / AI Companion ที่คุณเคยใช้งาน (ติ๊กได้หลายข้อ) <span class="req">*</span></span>
+            <div class="choice-grid cols-2">
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="ChatGPT" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">ChatGPT (OpenAI)</span>
+                  <span class="choice-desc">ผู้ช่วยสนทนายอดนิยม</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="Gemini" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Gemini (Google)</span>
+                  <span class="choice-desc">AI มัลติโมดอลจาก Google</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="Claude" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Claude (Anthropic)</span>
+                  <span class="choice-desc">เด่นด้านภาษาและความละเอียด</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="Character.AI" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Character.AI</span>
+                  <span class="choice-desc">AI Companion สวมบทบาทตัวละคร</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="Replika" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Replika</span>
+                  <span class="choice-desc">เพื่อน AI คุยเล่นและดูแลใจ</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="Grok" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Grok / Copilot</span>
+                  <span class="choice-desc">AI ผู้ช่วยบนโซเชียลและระบบงาน</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" name="aiUsed" value="Vivian (Celestia Studio)" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Vivian (Celestia Studio)</span>
+                  <span class="choice-desc">AI Companion ของโปรเจกต์เราเอง</span>
+                </span>
+              </label>
+              <label class="choice-card checkbox-card">
+                <input type="checkbox" id="aiNoneCheck" name="aiUsed" value="ไม่เคยใช้งานมาก่อน" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">ไม่เคยใช้งานมาก่อน</span>
+                  <span class="choice-desc">เพิ่งเคยลองเป็นครั้งแรก</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="writein-row">
+              <label class="q-sub-label" for="aiOtherWriteIn">ระบุชื่อ AI Chatbot / AI Companion อื่น ๆ เพิ่มเติม (Write-in)</label>
+              <input
+                type="text"
+                id="aiOtherWriteIn"
+                name="aiOtherWriteIn"
+                class="text-input"
+                placeholder="เช่น Perplexity, Kindroid, Nomi หรืออื่น ๆ..."
+              />
+            </div>
+            <p class="field-error" id="err-aiUsed" role="alert"></p>
+          </div>
+
+          <div class="question-block spaced-block">
+            <label class="q-label" for="vivianImpression">
+              2.2 เล่าประสบการณ์ที่ได้คุยกับ “Vivian” หรือสิ่งที่คุณอยากเห็นในตัว AI ของเรา (Write-in)
+            </label>
+            <textarea
+              id="vivianImpression"
+              name="vivianImpression"
+              rows="3"
+              class="text-area"
+              placeholder="เช่น ชอบโทนเสียงหรือบุคลิกของ Vivian แบบไหน หรือเคยลองคุยกับ AI Companion แล้วประทับใจ/ติดขัดตรงไหน..."
+            ></textarea>
+          </div>
+        </article>
+
+        <!-- ===== SECTION 3: VIVIAN PLATFORM, MODEL & NATURALNESS ===== -->
+        <article class="form-card reveal-on-scroll" data-section="vivian-core">
+          <div class="card-head">
+            <span class="step-badge">ส่วนที่ 3</span>
+            <div>
+              <h2>รูปแบบแอป โมเดล และความเป็นธรรมชาติของ Vivian</h2>
+              <p class="card-sub">เลือกคำตอบที่ตรงกับสไตล์การใช้งานที่คุณชอบที่สุด</p>
+            </div>
+          </div>
+
+          <!-- Q1: Web App vs Native App -->
+          <div class="question-block">
+            <span class="q-label">3.1 ประสบการณ์ใช้งานแอป: คุณชอบใช้งานแบบ Web App หรือ Native App มากกว่ากัน? <span class="req">*</span></span>
+            <div class="choice-grid cols-3">
+              <label class="choice-card radio-card">
+                <input type="radio" name="appPreference" value="Web App (เว็บแอป)" required />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Web App (เว็บแอป)</span>
+                  <span class="choice-desc">เปิดผ่านเบราว์เซอร์ได้ทันที ไม่เปลืองพื้นที่เครื่อง</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="appPreference" value="Native App (แอปติดตั้ง)" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Native App (แอปติดตั้ง)</span>
+                  <span class="choice-desc">ติดตั้งบนมือถือ/คอมพ์ ลื่นไหล แจ้งเตือนสะดวก</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="appPreference" value="ชอบทั้งสองแบบ" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">ชอบทั้งสองแบบ</span>
+                  <span class="choice-desc">อยากให้ซิงค์กันได้ทั้งบนเว็บและแอป</span>
+                </span>
+              </label>
+            </div>
+            <input
+              type="text"
+              name="appPreferenceReason"
+              class="text-input mt-sm"
+              placeholder="เหตุผลหรือประสบการณ์ใช้งาน Web / Native App ที่ผ่านมา (Write-in ไม่บังคับ)"
+            />
+            <p class="field-error" id="err-appPreference" role="alert"></p>
+          </div>
+
+          <!-- Q2: Live2D vs Full 3D -->
+          <div class="question-block spaced-block">
+            <span class="q-label">3.2 รูปแบบตัวละคร Vivian: คุณอยากให้ใช้โมเดลแบบ Live2D หรือ 3D เต็มรูปแบบ? <span class="req">*</span></span>
+            <div class="choice-grid cols-3">
+              <label class="choice-card radio-card">
+                <input type="radio" name="modelPreference" value="Live2D Model" required />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">Live2D Model</span>
+                  <span class="choice-desc">ลายเส้นอนิเมะ 2D น่ารัก กินสเปคเครื่องน้อย โหลดไว</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="modelPreference" value="Full 3D Model" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">3D เต็มรูปแบบ</span>
+                  <span class="choice-desc">โมเดล 3 มิติสมจริง มีมิติ หมุนดูและขยับท่าทางได้รอบ</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="modelPreference" value="สลับได้ตามสเปค (Hybrid)" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">เลือกสลับได้ (Hybrid)</span>
+                  <span class="choice-desc">มีทั้ง Live2D และ 3D ให้ปรับตามความแรงเครื่อง</span>
+                </span>
+              </label>
+            </div>
+            <input
+              type="text"
+              name="modelPreferenceNote"
+              class="text-input mt-sm"
+              placeholder="สไตล์ชุด ทรงผม หรือท่าทางของ Vivian ที่อยากเห็น (Write-in ไม่บังคับ)"
+            />
+            <p class="field-error" id="err-modelPreference" role="alert"></p>
+          </div>
+
+          <!-- Q3: Naturalness + Extra Thoughtful Features -->
+          <div class="question-block spaced-block">
+            <span class="q-label">3.3 ความเป็นธรรมชาติในการโต้ตอบของ Vivian ในความรู้สึก/ความคาดหวังของคุณ <span class="req">*</span></span>
+            <div class="choice-grid cols-2">
+              <label class="choice-card radio-card">
+                <input type="radio" name="naturalness" value="เป็นธรรมชาติมาก เหมือนคุยกับคนจริง" required />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">เป็นธรรมชาติมาก</span>
+                  <span class="choice-desc">ลื่นไหล เข้าใจบริบท เหมือนคุยกับเพื่อนจริง ๆ</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="naturalness" value="ค่อนข้างเป็นธรรมชาติ" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">ค่อนข้างเป็นธรรมชาติ</span>
+                  <span class="choice-desc">คุยรู้เรื่องดี แต่อยากให้ผ่อนคลายและเป็นกันเองอีกนิด</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="naturalness" value="ปานกลาง ยังดูเป็น AI อยู่บ้าง" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">ปานกลาง</span>
+                  <span class="choice-desc">บางคำตอบยังดูเป็นทางการหรือแอบเหมือนหุ่นยนต์อยู่บ้าง</span>
+                </span>
+              </label>
+              <label class="choice-card radio-card">
+                <input type="radio" name="naturalness" value="อยากให้ปรับปรุงจังหวะและน้ำเสียง" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body">
+                  <span class="choice-title">ต้องปรับปรุงเพิ่มเติม</span>
+                  <span class="choice-desc">คำตอบยังดูแข็ง ซ้ำ หรือจับอารมณ์ผู้พูดได้ไม่แม่น</span>
+                </span>
+              </label>
+            </div>
+            <p class="field-error" id="err-naturalness" role="alert"></p>
+          </div>
+
+          <div class="question-block spaced-block">
+            <span class="q-label">3.4 ฟีเจอร์และมิติความเป็นธรรมชาติที่อยากให้ Celestia Studio ใส่เพิ่มใน Vivian (ติ๊กได้หลายข้อ)</span>
+            <div class="choice-grid cols-2">
+              <label class="choice-card checkbox-card compact">
+                <input type="checkbox" name="desiredFeatures" value="ความจำระยะยาว (จำเรื่องที่เคยคุยได้)" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">ความจำระยะยาว (จำเรื่องที่เคยคุยได้)</span></span>
+              </label>
+              <label class="choice-card checkbox-card compact">
+                <input type="checkbox" name="desiredFeatures" value="ภาษาไทยเป็นกันเอง มีอารมณ์ขัน" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">ภาษาไทยเป็นกันเอง มีอารมณ์ขัน</span></span>
+              </label>
+              <label class="choice-card checkbox-card compact">
+                <input type="checkbox" name="desiredFeatures" value="เสียงพูด (Voice Chat) ที่เป็นธรรมชาติ" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">เสียงพูด (Voice Chat) ที่เป็นธรรมชาติ</span></span>
+              </label>
+              <label class="choice-card checkbox-card compact">
+                <input type="checkbox" name="desiredFeatures" value="สีหน้าและท่าทางตอบสนองตามอารมณ์" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">สีหน้าและท่าทางตอบสนองตามอารมณ์</span></span>
+              </label>
+              <label class="choice-card checkbox-card compact">
+                <input type="checkbox" name="desiredFeatures" value="ทักทาย/คอยดูแลในชีวิตประจำวัน" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">ทักทาย/คอยดูแลในชีวิตประจำวัน</span></span>
+              </label>
+              <label class="choice-card checkbox-card compact">
+                <input type="checkbox" name="desiredFeatures" value="ปรับแต่งชุด ธีมห้อง และบุคลิกได้" />
+                <span class="choice-control" aria-hidden="true"></span>
+                <span class="choice-body"><span class="choice-title">ปรับแต่งชุด ธีมห้อง และบุคลิกได้</span></span>
+              </label>
+            </div>
+            <input
+              type="text"
+              name="desiredFeaturesOther"
+              class="text-input mt-sm"
+              placeholder="บทบาทหรือความสามารถอื่น ๆ ของ Vivian ที่คุณอยากเห็น (Write-in)"
+            />
+          </div>
+        </article>
+
+        <!-- ===== SECTION 4: STAR RATINGS (PROJECT 5-STAR & SATISFACTION 4-STAR) ===== -->
+        <article class="form-card reveal-on-scroll" data-section="ratings">
+          <div class="card-head">
+            <span class="step-badge">ส่วนที่ 4</span>
+            <div>
+              <h2>ให้คะแนนโปรเจกต์ &amp; ความพึงพอใจในการใช้งาน</h2>
+              <p class="card-sub">
+                คะแนนของคุณจะถูกนำไปคำนวณ <strong>ค่าเฉลี่ย (Mean)</strong> และ <strong>ส่วนเบี่ยงเบนมาตรฐาน (SD)</strong> แบบเรียลไทม์
+              </p>
+            </div>
+          </div>
+
+          <!-- 4.1 Project Rating: 5 Stars -->
+          <div class="question-block rating-panel">
+            <div class="rating-head">
+              <div>
+                <span class="q-label">4.1 ให้ดาวทั้งโปรเจกต์ Vivian (Celestia Studio) เต็ม 5 ดาว <span class="req">*</span></span>
+                <p class="sub-hint">คลิกที่ดาวหรือคำอธิบายด้านล่างเพื่อให้คะแนน</p>
+              </div>
+              <div class="rating-badge" id="projectRatingBadge">ยังไม่ได้ให้คะแนน</div>
+            </div>
+
+            <div class="star-row" id="projectStars" role="radiogroup" aria-label="ให้ดาวทั้งโปรเจกต์ 1 ถึง 5 ดาว">
+              <button type="button" class="star-btn" data-value="1" aria-label="1 ดาว: ไม่ชอบ">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="2" aria-label="2 ดาว: เฉย ๆ">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="3" aria-label="3 ดาว: ชอบ">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="4" aria-label="4 ดาว: ฉันต้องการมาก">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="5" aria-label="5 ดาว: อยากร่วมรันโปรเจกต์ด้วยเลย">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+            </div>
+            <input type="hidden" id="projectRatingInput" name="projectRating" value="" />
+
+            <div class="star-legend-grid cols-5" id="projectLegend">
+              <button type="button" class="legend-item" data-group="project" data-value="1">
+                <span class="legend-stars">1 ดาว</span>
+                <span class="legend-text">ไม่ชอบ</span>
+              </button>
+              <button type="button" class="legend-item" data-group="project" data-value="2">
+                <span class="legend-stars">2 ดาว</span>
+                <span class="legend-text">เฉย ๆ</span>
+              </button>
+              <button type="button" class="legend-item" data-group="project" data-value="3">
+                <span class="legend-stars">3 ดาว</span>
+                <span class="legend-text">ชอบ</span>
+              </button>
+              <button type="button" class="legend-item" data-group="project" data-value="4">
+                <span class="legend-stars">4 ดาว</span>
+                <span class="legend-text">ฉันต้องการมาก</span>
+              </button>
+              <button type="button" class="legend-item" data-group="project" data-value="5">
+                <span class="legend-stars">5 ดาว</span>
+                <span class="legend-text">อยากร่วมรันโปรเจกต์ด้วยเลย</span>
+              </button>
+            </div>
+            <p class="field-error" id="err-projectRating" role="alert"></p>
+          </div>
+
+          <!-- 4.2 Usage Satisfaction: 4 Stars -->
+          <div class="question-block rating-panel">
+            <div class="rating-head">
+              <div>
+                <span class="q-label">4.2 ความพึงพอใจในการใช้งานโดยรวม (เต็ม 4 ดาว) <span class="req">*</span></span>
+                <p class="sub-hint">ประเมินความพึงพอใจจากการใช้งานจริงในระดับ 1 ถึง 4 ดาว</p>
+              </div>
+              <div class="rating-badge" id="satisfactionBadge">ยังไม่ได้ให้คะแนน</div>
+            </div>
+
+            <div class="star-row" id="satisfactionStars" role="radiogroup" aria-label="ความพึงพอใจในการใช้งาน 1 ถึง 4 ดาว">
+              <button type="button" class="star-btn" data-value="1" aria-label="1 ดาว: ไปทำใหม่ไป">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="2" aria-label="2 ดาว: พึงพอใจนิดหน่อย">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="3" aria-label="3 ดาว: ปานกลาง">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+              <button type="button" class="star-btn" data-value="4" aria-label="4 ดาว: พึงพอใจ">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M12 2.4l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.3l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/></svg>
+              </button>
+            </div>
+            <input type="hidden" id="satisfactionInput" name="satisfactionRating" value="" />
+
+            <div class="star-legend-grid cols-4" id="satisfactionLegend">
+              <button type="button" class="legend-item" data-group="satisfaction" data-value="1">
+                <span class="legend-stars">1 ดาว</span>
+                <span class="legend-text">ไปทำใหม่ไป</span>
+              </button>
+              <button type="button" class="legend-item" data-group="satisfaction" data-value="2">
+                <span class="legend-stars">2 ดาว</span>
+                <span class="legend-text">พึงพอใจนิดหน่อย</span>
+              </button>
+              <button type="button" class="legend-item" data-group="satisfaction" data-value="3">
+                <span class="legend-stars">3 ดาว</span>
+                <span class="legend-text">ปานกลาง</span>
+              </button>
+              <button type="button" class="legend-item" data-group="satisfaction" data-value="4">
+                <span class="legend-stars">4 ดาว</span>
+                <span class="legend-text">พึงพอใจ</span>
+              </button>
+            </div>
+            <p class="field-error" id="err-satisfaction" role="alert"></p>
+          </div>
+        </article>
+
+        <!-- ===== SECTION 5: ISSUES & FEEDBACK (FINAL) ===== -->
+        <article class="form-card reveal-on-scroll" data-section="feedback">
+          <div class="card-head">
+            <span class="step-badge">ส่วนที่ 5</span>
+            <div>
+              <h2>ปัญหาที่พบ และข้อเสนอแนะเพิ่มเติม</h2>
+              <p class="card-sub">เขียนเล่าปัญหาหรือไอเดียที่คุณอยากส่งถึงทีม Celestia Studio ได้เต็มที่เลย</p>
+            </div>
+          </div>
+
+          <div class="question-block">
+            <label class="q-label" for="issuesText">5.1 ปัญหาที่พบระหว่างการใช้งาน (ถ้ามี)</label>
+            <textarea
+              id="issuesText"
+              name="issuesText"
+              rows="3"
+              class="text-area"
+              placeholder="เช่น หน้าจอกระตุก บั๊กการแสดงผล โหลดช้า หรือจุดที่ใช้งานแล้วงง..."
+            ></textarea>
+          </div>
+
+          <div class="question-block">
+            <label class="q-label" for="suggestionsText">5.2 ข้อเสนอแนะและกำลังใจสำหรับทีมพัฒนา &amp; น้อง Vivian</label>
+            <textarea
+              id="suggestionsText"
+              name="suggestionsText"
+              rows="3"
+              class="text-area"
+              placeholder="เขียนข้อเสนอแนะ สิ่งที่อยากให้เพิ่ม หรือข้อความถึง Celestia Studio..."
+            ></textarea>
+          </div>
+        </article>
+
+        <!-- Submit Action Bar -->
+        <div class="submit-bar reveal-on-scroll">
+          <button type="button" class="btn-ghost" id="btnResetForm">ล้างคำตอบในฟอร์ม</button>
+          <button type="submit" class="btn-primary" id="btnSubmitForm">
+            <span>ส่งแบบสอบถามให้ Vivian</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== VIEW 2: ANALYTICS & SD DASHBOARD ==================== -->
+    <section id="viewStats" class="view-panel" role="tabpanel" aria-labelledby="tabBtnStats" hidden>
+      <div class="stats-toolbar">
+        <div>
+          <h2 class="stats-title">สรุปผลสำรวจ &amp; ค่าเฉลี่ยมาตรฐาน (Mean &amp; SD)</h2>
+          <p class="stats-subtitle" id="statsSubtitle">กำลังแสดงข้อมูลจากทุกคำตอบที่บันทึกไว้</p>
+        </div>
+
+        <div class="toolbar-actions">
+          <label class="filter-toggle" title="เลือกแสดงเฉพาะผู้ที่ยินยอมเปิดเผยข้อมูลเพื่อนำไปพัฒนาต่อ">
+            <input type="checkbox" id="filterConsentOnly" />
+            <span>เฉพาะผู้ยินยอมเท่านั้น</span>
+          </label>
+          <button type="button" class="btn-soft" id="btnLoadDemo">เติมข้อมูลตัวอย่าง</button>
+          <button type="button" class="btn-soft" id="btnExportCsv">Export CSV</button>
+          <button type="button" class="btn-soft" id="btnExportJson">Export JSON</button>
+          <button type="button" class="btn-danger-soft" id="btnClearAllData">ล้างข้อมูลทั้งหมด</button>
+        </div>
+      </div>
+
+      <!-- Demo Banner -->
+      <div class="demo-notice" id="demoNotice" hidden>
+        <span>ขณะนี้มี <strong>ข้อมูลตัวอย่าง (Demo)</strong> รวมอยู่ด้วยเพื่อให้เห็นการคำนวณ Mean &amp; SD ทันที เมื่อพร้อมเก็บข้อมูลจริงสามารถกด “ล้างข้อมูลทั้งหมด” ได้เลยค่ะ</span>
+      </div>
+
+      <!-- Top KPI Strip (Mean & SD Highlight Cards) -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">ผู้ตอบทั้งหมด (N)</span>
+          <div class="kpi-value tabular" id="kpiTotalN">0</div>
+          <span class="kpi-meta" id="kpiConsentRate">ยินยอม 0 คน (0%)</span>
+        </div>
+
+        <div class="kpi-card accent-pink">
+          <span class="kpi-label">คะแนนโปรเจกต์ (1-5 ดาว)</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value tabular" id="kpiProjMean">—</span>
+            <span class="kpi-unit">/ 5.00</span>
+          </div>
+          <div class="sd-pills">
+            <span class="sd-pill" title="Sample Standard Deviation (n-1)">SD (s): <strong id="kpiProjSD">—</strong></span>
+            <span class="sd-pill muted" title="Population Standard Deviation (n)">σ: <strong id="kpiProjPopSD">—</strong></span>
+          </div>
+        </div>
+
+        <div class="kpi-card accent-lilac">
+          <span class="kpi-label">ความพึงพอใจใช้งาน (1-4 ดาว)</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value tabular" id="kpiSatMean">—</span>
+            <span class="kpi-unit">/ 4.00</span>
+          </div>
+          <div class="sd-pills">
+            <span class="sd-pill" title="Sample Standard Deviation (n-1)">SD (s): <strong id="kpiSatSD">—</strong></span>
+            <span class="sd-pill muted" title="Population Standard Deviation (n)">σ: <strong id="kpiSatPopSD">—</strong></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <span class="kpi-label">อายุเฉลี่ย (ที่กรอกตัวเลข)</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value tabular" id="kpiAgeMean">—</span>
+            <span class="kpi-unit">ปี</span>
+          </div>
+          <div class="sd-pills">
+            <span class="sd-pill">SD (s): <strong id="kpiAgeSD">—</strong></span>
+            <span class="sd-pill muted" id="kpiAgeN">n = 0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Star Distributions -->
+      <div class="stats-two-col">
+        <div class="stats-card">
+          <div class="stats-card-head">
+            <h3>การกระจายคะแนนโปรเจกต์ (1-5 ดาว)</h3>
+            <span class="formula-tag">x̄ ± s</span>
+          </div>
+          <div class="dist-list" id="projDistList"></div>
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-card-head">
+            <h3>การกระจายความพึงพอใจ (1-4 ดาว)</h3>
+            <span class="formula-tag">x̄ ± s</span>
+          </div>
+          <div class="dist-list" id="satDistList"></div>
+        </div>
+      </div>
+
+      <!-- Breakdown Section -->
+      <div class="stats-three-col">
+        <div class="stats-card">
+          <h3>Web App vs Native App</h3>
+          <div class="dist-list" id="appPrefDist"></div>
+        </div>
+        <div class="stats-card">
+          <h3>Live2D vs Full 3D</h3>
+          <div class="dist-list" id="modelPrefDist"></div>
+        </div>
+        <div class="stats-card">
+          <h3>ความเป็นธรรมชาติในการตอบ</h3>
+          <div class="dist-list" id="naturalnessDist"></div>
+        </div>
+      </div>
+
+      <div class="stats-two-col">
+        <div class="stats-card">
+          <h3>AI Chatbot / Companion ที่ผู้ตอบเคยใช้งาน</h3>
+          <div class="dist-list" id="aiUsedDist"></div>
+        </div>
+        <div class="stats-card">
+          <h3>เพศ &amp; วิธีคำนวณค่าสถิติ (SD)</h3>
+          <div class="dist-list" id="genderDist"></div>
+          <div class="formula-box">
+            <strong>สูตรที่ใช้คำนวณในระบบ:</strong>
+            <p>ค่าเฉลี่ย (Mean): <code>x̄ = Σx / N</code></p>
+            <p>ส่วนเบี่ยงเบนมาตรฐานตัวอย่าง (Sample SD): <code>s = √[ Σ(x - x̄)² / (N - 1) ]</code></p>
+            <p>ส่วนเบี่ยงเบนมาตรฐานประชากร (Pop. SD): <code>σ = √[ Σ(x - x̄)² / N ]</code></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Individual Responses Feed -->
+      <div class="stats-card">
+        <div class="stats-card-head">
+          <h3>รายการคำตอบและข้อเสนอแนะล่าสุด</h3>
+          <span class="muted-small" id="responsesShownCount">0 รายการ</span>
+        </div>
+        <div id="responsesFeed" class="responses-feed"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>พัฒนาด้วยความตั้งใจเพื่อ <strong>Celestia Studio</strong> : โครงการ <strong>Vivian AI</strong></p>
+  </footer>
+
+  <!-- Success Submission Modal -->
+  <div class="modal-backdrop" id="successModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-icon" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" />
+        </svg>
+      </div>
+      <h2 id="modalTitle">บันทึกคำตอบเรียบร้อยแล้ว!</h2>
+      <p id="modalDesc">ขอบคุณที่ร่วมแบ่งปันความคิดเห็นให้ทีม Celestia Studio และน้อง Vivian นะคะ</p>
+      <div class="modal-summary" id="modalSummary"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="btnCloseModal">กรอกคำตอบเพิ่ม</button>
+        <button type="button" class="btn-primary" id="btnGoToStats">ดูสถิติ &amp; ค่า SD</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
