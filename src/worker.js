@@ -231,15 +231,19 @@ export default {
           .prepare("SELECT * FROM survey_responses ORDER BY created_at DESC")
           .all();
         const responses = (results || []).map(rowToEntry);
+        const consented = responses.filter((r) => r.consent === "ยินยอม");
+        const buildSummary = (list) => ({
+          total: list.length,
+          projectRatingStats: computeStats(list.map((r) => r.projectRating)),
+          satisfactionRatingStats: computeStats(list.map((r) => r.satisfactionRating)),
+          ageStats: computeStats(list.map((r) => r.ageExact)),
+        });
         return jsonResponse({
           responses,
           bindingName,
-          summary: {
-            total: responses.length,
-            projectRatingStats: computeStats(responses.map((r) => r.projectRating)),
-            satisfactionRatingStats: computeStats(responses.map((r) => r.satisfactionRating)),
-            ageStats: computeStats(responses.map((r) => r.ageExact)),
-          },
+          consentCount: consented.length,
+          summary: buildSummary(responses),
+          summaryConsented: buildSummary(consented),
         });
       }
 

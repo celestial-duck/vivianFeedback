@@ -58,10 +58,15 @@
   const btnExportJson = document.getElementById("btnExportJson");
   const btnSubmitForm = document.getElementById("btnSubmitForm");
 
-  // ---------- Cloudflare D1 API Client (No browser cache / localStorage) ----------
+  // ---------- Cloudflare D1 API Client (Stats computed by backend) ----------
   let dbConnected = false;
   let lastDbError = "";
   let responses = [];
+  let serverStats = {
+    consentCount: 0,
+    summary: null,
+    summaryConsented: null,
+  };
 
   function setDbBanner(message) {
     lastDbError = message || "";
@@ -108,6 +113,11 @@
       dbConnected = true;
       setDbBanner("");
       updateDbBadge();
+      serverStats = {
+        consentCount: typeof data.consentCount === "number" ? data.consentCount : data.responses.filter((r) => r.consent === "ยินยอม").length,
+        summary: data.summary || null,
+        summaryConsented: data.summaryConsented || null,
+      };
       return data.responses;
     } catch (err) {
       dbConnected = false;
@@ -638,30 +648,15 @@
     }
   });
 
-  // ---------- Statistical Engine (Mean & Standard Deviation) ----------
-  function computeStats(values) {
-    const nums = values.filter((v) => typeof v === "number" && Number.isFinite(v));
-    const n = nums.length;
-    if (n === 0) {
-      return { n: 0, mean: null, sampleSD: null, popSD: null, min: null, max: null };
-    }
-    const sum = nums.reduce((acc, v) => acc + v, 0);
-    const mean = sum / n;
-    const sqDiffSum = nums.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0);
-    const popSD = Math.sqrt(sqDiffSum / n);
-    const sampleSD = n >= 2 ? Math.sqrt(sqDiffSum / (n - 1)) : null;
-    return {
-      n,
-      mean,
-      sampleSD,
-      popSD,
-      min: Math.min(...nums),
-      max: Math.max(...nums),
-    };
-  }
-
+  // ---------- Display Formatting (Stats computed by backend) ----------
   function fmt(num, digits = 2) {
     return typeof num === "number" && Number.isFinite(num) ? num.toFixed(digits) : "—";
+  }
+
+  function formatSD(statObj) {
+    if (!statObj || !statObj.n) return "—";
+    if (statObj.sampleSD === null) return "รอข้อมูล ≥ 2 คน";
+    return fmt(statObj.sampleSD, 2);
   }
 
   function updateNavBadge() {
@@ -724,34 +719,32 @@
     const activeList = consentOnly ? responses.filter((r) => r.consent === "ยินยอม") : responses;
     const total = activeList.length;
 
-    const consentCount = responses.filter((r) => r.consent === "ยินยอม").length;
+    const consentCount = serverStats.consentCount;
     const consentPct = responses.length ? Math.round((consentCount / responses.length) * 100) : 0;
 
     document.getElementById("statsSubtitle").textContent = consentOnly
       ? `แสดงเฉพาะผู้ยินยอมเปิดเผยข้อมูล (${total} จากทั้งหมด ${responses.length} คำตอบ)`
       : `กำลังแสดงข้อมูลจากทั้งหมด ${responses.length} คำตอบ`;
 
-    // KPIs
+    // KPIs (from backend summary)
+    const activeSummary = (consentOnly ? serverStats.summaryConsented : serverStats.summary) || {};
+    const projStats = activeSummary.projectRatingStats || {};
+    const satStats = activeSummary.satisfactionRatingStats || {};
+    const ageStats = activeSummary.ageStats || {};
+
     document.getElementById("kpiTotalN").textContent = String(total);
     document.getElementById("kpiConsentRate").textContent = `ยินยอม ${consentCount} คน (${consentPct}%)`;
 
-    const projStats = computeStats(activeList.map((r) => r.projectRating));
     document.getElementById("kpiProjMean").textContent = fmt(projStats.mean, 2);
-    document.getElementById("kpiProjSD").textContent =
-      projStats.sampleSD !== null ? fmt(projStats.sampleSD, 2) : projStats.n === 1 ? "ต้อง N>=2" : "—";
-    document.getElementById("kpiProjPopSD").textContent = fmt(projStats.popSD, 2);
+    document.getElementById("kpiProjSD").textContent = formatSD(projStats);
 
-    const satStats = computeStats(activeList.map((r) => r.satisfactionRating));
     document.getElementById("kpiSatMean").textContent = fmt(satStats.mean, 2);
-    document.getElementById("kpiSatSD").textContent =
-      satStats.sampleSD !== null ? fmt(satStats.sampleSD, 2) : satStats.n === 1 ? "ต้อง N>=2" : "—";
-    document.getElementById("kpiSatPopSD").textContent = fmt(satStats.popSD, 2);
+    document.getElementById("kpiSatSD").textContent = formatSD(satStats);
 
-    const ageStats = computeStats(activeList.map((r) => r.ageExact));
-    document.getElementById("kpiAgeMean").textContent = ageStats.mean !== null ? ageStats.mean.toFixed(1) : "—";
-    document.getElementById("kpiAgeSD").textContent =
-      ageStats.sampleSD !== null ? fmt(ageStats.sampleSD, 2) : ageStats.n === 1 ? "ต้อง N>=2" : "—";
-    document.getElementById("kpiAgeN").textContent = `n = ${ageStats.n}`;
+    document.getElementById("kpiAgeMean").textContent =
+      typeof ageStats.mean === "number" && Number.isFinite(ageStats.mean) ? ageStats.mean.toFixed(1) : "—";
+    document.getElementById("kpiAgeSD").textContent = formatSD(ageStats);
+    document.getElementById("kpiAgeN").textContent = `${ageStats.n || 0} คน`;
 
     // Project Rating 1-5 distribution
     const projDist = [5, 4, 3, 2, 1].map((star) => ({
@@ -825,7 +818,7 @@
     document.getElementById("responsesShownCount").textContent = `${total} รายการ`;
     const feed = document.getElementById("responsesFeed");
     if (!activeList.length) {
-      feed.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลคำตอบในหมวดนี้ ลองส่งแบบสอบถามหรือกด “เติมข้อมูลตัวอย่าง” ด้านบนค่ะ</div>`;
+      feed.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลคำตอบในหมวดนี้ เมื่อมีผู้ส่งแบบสอบถามข้อมูลจะแสดงที่นี่อัตโนมัติค่ะ</div>`;
       return;
     }
 
@@ -945,17 +938,12 @@
   });
 
   btnExportJson.addEventListener("click", () => {
-    const projStats = computeStats(responses.map((r) => r.projectRating));
-    const satStats = computeStats(responses.map((r) => r.satisfactionRating));
     const payload = {
       studio: "Celestia Studio",
       project: "Vivian AI Companion Survey",
       exportedAt: new Date().toISOString(),
-      summary: {
-        totalResponses: responses.length,
-        projectRatingStats: projStats,
-        satisfactionRatingStats: satStats,
-      },
+      summary: serverStats.summary,
+      summaryConsented: serverStats.summaryConsented,
       responses,
     };
     downloadBlob(JSON.stringify(payload, null, 2), "celestia-vivian-survey.json", "application/json");

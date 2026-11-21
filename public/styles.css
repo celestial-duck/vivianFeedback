@@ -1412,28 +1412,6 @@ body {
   background: var(--lilac-400);
 }
 
-.formula-box {
-  margin-top: 16px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  background: var(--surface-blush);
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-}
-
-.formula-box p {
-  margin: 4px 0 0;
-}
-
-.formula-box code {
-  font-family: var(--font-num);
-  background: #ffffff;
-  padding: 1px 6px;
-  border-radius: 6px;
-  color: var(--pink-500);
-  font-weight: 700;
-}
-
 /* Responses Feed */
 .responses-feed {
   display: flex;

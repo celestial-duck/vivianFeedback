@@ -312,7 +312,7 @@
             </div>
 
             <div class="writein-row">
-              <label class="q-sub-label" for="aiOtherWriteIn">ระบุชื่อ AI Chatbot / AI Companion อื่น ๆ เพิ่มเติม (Write-in)</label>
+              <label class="q-sub-label" for="aiOtherWriteIn">ระบุชื่อ AI Chatbot / AI Companion อื่น ๆ เพิ่มเติม</label>
               <input
                 type="text"
                 id="aiOtherWriteIn"
@@ -326,7 +326,7 @@
 
           <div class="question-block spaced-block">
             <label class="q-label" for="vivianImpression">
-              2.2 เล่าประสบการณ์ที่ได้คุยกับ “Vivian” หรือสิ่งที่คุณอยากเห็นในตัว AI ของเรา (Write-in)
+              2.2 เล่าประสบการณ์ที่ได้คุยกับ “Vivian” หรือสิ่งที่คุณอยากเห็นในตัว AI ของเรา
             </label>
             <textarea
               id="vivianImpression"
@@ -381,7 +381,7 @@
               type="text"
               name="appPreferenceReason"
               class="text-input mt-sm"
-              placeholder="เหตุผลหรือประสบการณ์ใช้งาน Web / Native App ที่ผ่านมา (Write-in ไม่บังคับ)"
+              placeholder="เหตุผลหรือประสบการณ์ใช้งาน Web / Native App ที่ผ่านมา (ไม่บังคับ)"
             />
             <p class="field-error" id="err-appPreference" role="alert"></p>
           </div>
@@ -419,7 +419,7 @@
               type="text"
               name="modelPreferenceNote"
               class="text-input mt-sm"
-              placeholder="สไตล์ชุด ทรงผม หรือท่าทางของ Vivian ที่อยากเห็น (Write-in ไม่บังคับ)"
+              placeholder="สไตล์ชุด ทรงผม หรือท่าทางของ Vivian ที่อยากเห็น (ไม่บังคับ)"
             />
             <p class="field-error" id="err-modelPreference" role="alert"></p>
           </div>
@@ -502,7 +502,7 @@
               type="text"
               name="desiredFeaturesOther"
               class="text-input mt-sm"
-              placeholder="บทบาทหรือความสามารถอื่น ๆ ของ Vivian ที่คุณอยากเห็น (Write-in)"
+              placeholder="บทบาทหรือความสามารถอื่น ๆ ของ Vivian ที่คุณอยากเห็น (ไม่บังคับ)"
             />
           </div>
         </article>
@@ -671,7 +671,7 @@
     <section id="viewStats" class="view-panel" role="tabpanel" aria-labelledby="tabBtnStats" hidden>
       <div class="stats-toolbar">
         <div>
-          <h2 class="stats-title">สรุปผลสำรวจ &amp; ค่าเฉลี่ยมาตรฐาน (Mean &amp; SD)</h2>
+          <h2 class="stats-title">สรุปผลสำรวจความพึงพอใจ</h2>
           <p class="stats-subtitle" id="statsSubtitle">กำลังแสดงข้อมูลจากทุกคำตอบที่บันทึกไว้</p>
         </div>
 
@@ -689,11 +689,14 @@
       <!-- DB Error Banner -->
       <div class="db-error-banner" id="statsDbError" hidden role="alert"></div>
 
-      <!-- Top KPI Strip (Mean & SD Highlight Cards) -->
+      <!-- Top KPI Strip -->
       <div class="kpi-grid">
         <div class="kpi-card">
-          <span class="kpi-label">ผู้ตอบทั้งหมด (N)</span>
-          <div class="kpi-value tabular" id="kpiTotalN">0</div>
+          <span class="kpi-label">ผู้ตอบแบบสอบถาม</span>
+          <div class="kpi-value-row">
+            <span class="kpi-value tabular" id="kpiTotalN">0</span>
+            <span class="kpi-unit">คน</span>
+          </div>
           <span class="kpi-meta" id="kpiConsentRate">ยินยอม 0 คน (0%)</span>
         </div>
 
@@ -704,8 +707,7 @@
             <span class="kpi-unit">/ 5.00</span>
           </div>
           <div class="sd-pills">
-            <span class="sd-pill" title="Sample Standard Deviation (n-1)">SD (s): <strong id="kpiProjSD">—</strong></span>
-            <span class="sd-pill muted" title="Population Standard Deviation (n)">σ: <strong id="kpiProjPopSD">—</strong></span>
+            <span class="sd-pill">ค่าเบี่ยงเบน (SD): <strong id="kpiProjSD">—</strong></span>
           </div>
         </div>
 
@@ -716,20 +718,19 @@
             <span class="kpi-unit">/ 4.00</span>
           </div>
           <div class="sd-pills">
-            <span class="sd-pill" title="Sample Standard Deviation (n-1)">SD (s): <strong id="kpiSatSD">—</strong></span>
-            <span class="sd-pill muted" title="Population Standard Deviation (n)">σ: <strong id="kpiSatPopSD">—</strong></span>
+            <span class="sd-pill">ค่าเบี่ยงเบน (SD): <strong id="kpiSatSD">—</strong></span>
           </div>
         </div>
 
         <div class="kpi-card">
-          <span class="kpi-label">อายุเฉลี่ย (ที่กรอกตัวเลข)</span>
+          <span class="kpi-label">อายุเฉลี่ยผู้ตอบ</span>
           <div class="kpi-value-row">
             <span class="kpi-value tabular" id="kpiAgeMean">—</span>
             <span class="kpi-unit">ปี</span>
           </div>
           <div class="sd-pills">
-            <span class="sd-pill">SD (s): <strong id="kpiAgeSD">—</strong></span>
-            <span class="sd-pill muted" id="kpiAgeN">n = 0</span>
+            <span class="sd-pill">SD: <strong id="kpiAgeSD">—</strong></span>
+            <span class="sd-pill muted" id="kpiAgeN">0 คน</span>
           </div>
         </div>
       </div>
@@ -739,7 +740,6 @@
         <div class="stats-card">
           <div class="stats-card-head">
             <h3>การกระจายคะแนนโปรเจกต์ (1-5 ดาว)</h3>
-            <span class="formula-tag">x̄ ± s</span>
           </div>
           <div class="dist-list" id="projDistList"></div>
         </div>
@@ -747,7 +747,6 @@
         <div class="stats-card">
           <div class="stats-card-head">
             <h3>การกระจายความพึงพอใจ (1-4 ดาว)</h3>
-            <span class="formula-tag">x̄ ± s</span>
           </div>
           <div class="dist-list" id="satDistList"></div>
         </div>
@@ -775,14 +774,8 @@
           <div class="dist-list" id="aiUsedDist"></div>
         </div>
         <div class="stats-card">
-          <h3>เพศ &amp; วิธีคำนวณค่าสถิติ (SD)</h3>
+          <h3>เพศของผู้ตอบแบบสอบถาม</h3>
           <div class="dist-list" id="genderDist"></div>
-          <div class="formula-box">
-            <strong>สูตรที่ใช้คำนวณในระบบ:</strong>
-            <p>ค่าเฉลี่ย (Mean): <code>x̄ = Σx / N</code></p>
-            <p>ส่วนเบี่ยงเบนมาตรฐานตัวอย่าง (Sample SD): <code>s = √[ Σ(x - x̄)² / (N - 1) ]</code></p>
-            <p>ส่วนเบี่ยงเบนมาตรฐานประชากร (Pop. SD): <code>σ = √[ Σ(x - x̄)² / N ]</code></p>
-          </div>
         </div>
       </div>
 
