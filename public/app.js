@@ -367,7 +367,7 @@
     return {
       reset() {
         hiddenInput.value = "";
-        badgeEl.textContent = "ยังไม่ได้ให้คะแนน";
+        badgeEl.textContent = "ยังไม่ได้จิ้มดาวเลย";
         badgeEl.classList.remove("is-selected");
         legendItems.forEach((item) => item.classList.remove("is-selected"));
         paintStars(0, 0);
@@ -420,7 +420,7 @@
     const done = checks.filter(Boolean).length;
     const pct = Math.round((done / checks.length) * 100);
     progressFill.style.width = `${pct}%`;
-    progressLabel.textContent = `ความคืบหน้า ${done} / ${checks.length} หมวด`;
+    progressLabel.textContent = `ตอบแล้ว ${done} / ${checks.length} ข้อ`;
   }
 
   // ---------- Validation ----------
@@ -457,48 +457,48 @@
 
     const consent = surveyForm.querySelector('input[name="consent"]:checked');
     if (!consent) {
-      fail("err-consent", "กรุณาเลือกความยินยอมเปิดเผยข้อมูลก่อนส่งแบบสอบถามค่ะ", surveyForm.querySelector('input[name="consent"]'));
+      fail("err-consent", "แกอย่าลืมกดเลือกข้อตกลงก่อนส่งน้า", surveyForm.querySelector('input[name="consent"]'));
     }
 
     if (!hasAgeFilled()) {
-      fail("err-age", "กรุณากรอกอายุ เลือกช่วงอายุ หรือติ๊ก “ไม่ระบุอายุ” ค่ะ", ageWriteIn);
+      fail("err-age", "พิมพ์อายุ เลือกช่วงอายุ หรือติ๊กขอไม่บอกอายุก่อนน้า", ageWriteIn);
     } else if (!ageUnspecified.checked && ageWriteIn.value.trim() !== "") {
       const num = Number(ageWriteIn.value);
       if (!Number.isFinite(num) || num < 5 || num > 110) {
-        fail("err-age", "กรุณากรอกอายุระหว่าง 5 ถึง 110 ปีค่ะ", ageWriteIn);
+        fail("err-age", "กรอกอายุเป็นตัวเลขช่วง 5 ถึง 110 ปีนะแก", ageWriteIn);
       }
     }
 
     const gender = surveyForm.querySelector('input[name="gender"]:checked');
     if (!gender) {
-      fail("err-gender", "กรุณาเลือกเพศค่ะ", surveyForm.querySelector('input[name="gender"]'));
+      fail("err-gender", "เลือกเพศก่อนนะแก", surveyForm.querySelector('input[name="gender"]'));
     }
 
     if (!hasAiFilled()) {
-      fail("err-aiUsed", "กรุณาติ๊กเลือก AI ที่เคยใช้งาน หรือพิมพ์ระบุเพิ่มเติมอย่างน้อย 1 รายการค่ะ", aiOtherWriteIn);
+      fail("err-aiUsed", "จิ้ม AI ที่เคยใช้ หรือพิมพ์ชื่อมาสักอันนึงก่อนน้า", aiOtherWriteIn);
     }
 
     const appPref = surveyForm.querySelector('input[name="appPreference"]:checked');
     if (!appPref) {
-      fail("err-appPreference", "กรุณาเลือกรูปแบบแอปที่คุณชอบค่ะ", surveyForm.querySelector('input[name="appPreference"]'));
+      fail("err-appPreference", "เลือกแบบ Web App หรือ Native App ก่อนนะ", surveyForm.querySelector('input[name="appPreference"]'));
     }
 
     const modelPref = surveyForm.querySelector('input[name="modelPreference"]:checked');
     if (!modelPref) {
-      fail("err-modelPreference", "กรุณาเลือกรูปแบบโมเดล Live2D หรือ Full 3D ค่ะ", surveyForm.querySelector('input[name="modelPreference"]'));
+      fail("err-modelPreference", "เลือกว่าชอบ Live2D หรือ 3D ก่อนน้า", surveyForm.querySelector('input[name="modelPreference"]'));
     }
 
     const naturalness = surveyForm.querySelector('input[name="naturalness"]:checked');
     if (!naturalness) {
-      fail("err-naturalness", "กรุณาประเมินความเป็นธรรมชาติในการตอบค่ะ", surveyForm.querySelector('input[name="naturalness"]'));
+      fail("err-naturalness", "บอกฟีลความเป็นธรรมชาติของน้องหน่อยน้า", surveyForm.querySelector('input[name="naturalness"]'));
     }
 
     if (!projectRatingInput.value) {
-      fail("err-projectRating", "กรุณาให้ดาวทั้งโปรเจกต์ (1-5 ดาว) ค่ะ", projectRatingInput);
+      fail("err-projectRating", "อย่าลืมจิ้มดาวให้โปรเจกต์ (1-5 ดาว) ด้วยน้า", projectRatingInput);
     }
 
     if (!satisfactionInput.value) {
-      fail("err-satisfaction", "กรุณาให้คะแนนความพึงพอใจในการใช้งาน (1-4 ดาว) ค่ะ", satisfactionInput);
+      fail("err-satisfaction", "อย่าลืมจิ้มดาวความพึงพอใจ (1-4 ดาว) ด้วยนะ", satisfactionInput);
     }
 
     if (firstErrorEl) {
@@ -592,7 +592,7 @@
     const entry = collectFormData();
     const originalBtnHtml = btnSubmitForm.innerHTML;
     btnSubmitForm.disabled = true;
-    btnSubmitForm.textContent = "กำลังบันทึกลง D1...";
+    btnSubmitForm.textContent = "กำลังส่งให้ Vivian...";
     setDbBanner("");
 
     try {
@@ -818,7 +818,7 @@
     document.getElementById("responsesShownCount").textContent = `${total} รายการ`;
     const feed = document.getElementById("responsesFeed");
     if (!activeList.length) {
-      feed.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลคำตอบในหมวดนี้ เมื่อมีผู้ส่งแบบสอบถามข้อมูลจะแสดงที่นี่อัตโนมัติค่ะ</div>`;
+      feed.innerHTML = `<div class="empty-state">ยังไม่มีใครส่งคำตอบเข้ามาเลย รอเพื่อน ๆ แวะมาเม้าท์กันอยู่น้า</div>`;
       return;
     }
 
