@@ -296,35 +296,6 @@ export default {
         return jsonResponse({ ok: true, entry }, 201);
       }
 
-      // POST /api/responses/demo
-      if (url.pathname === "/api/responses/demo" && request.method === "POST") {
-        let body;
-        try {
-          body = await request.json();
-        } catch {
-          return jsonResponse({ error: "Invalid JSON body" }, 400);
-        }
-        const items = Array.isArray(body?.items) ? body.items : [];
-        for (const item of items) {
-          const err = validateSubmission(item);
-          if (err) continue;
-          const existing = await db
-            .prepare("SELECT id FROM survey_responses WHERE id = ?")
-            .bind(String(item.id))
-            .first();
-          if (!existing) {
-            await insertEntry(db, { ...item, isDemo: true });
-          }
-        }
-        return jsonResponse({ ok: true });
-      }
-
-      // DELETE /api/responses
-      if (url.pathname === "/api/responses" && request.method === "DELETE") {
-        await db.prepare("DELETE FROM survey_responses").run();
-        return jsonResponse({ ok: true });
-      }
-
       return jsonResponse({ error: "API endpoint not found" }, 404);
     } catch (error) {
       schemaInitialized = false;

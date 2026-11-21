@@ -16,137 +16,6 @@
     4: "พึงพอใจ",
   };
 
-  const SAMPLE_RESPONSES = [
-    {
-      id: "demo-1",
-      isDemo: true,
-      createdAt: "2026-11-20T10:15:00+07:00",
-      consent: "ยินยอม",
-      ageExact: 21,
-      ageDisplay: "21 ปี (18-24 ปี)",
-      ageRange: "18-24 ปี",
-      gender: "หญิง",
-      aiUsed: ["ChatGPT", "Character.AI", "Vivian (Celestia Studio)"],
-      vivianImpression: "น้อง Vivian น่ารักมากค่ะ ชอบโทนเสียงที่คุยแล้วรู้สึกอบอุ่นเหมือนมีเพื่อนคอยรับฟัง",
-      appPreference: "ชอบทั้งสองแบบ",
-      appPreferenceReason: "อยู่บ้านชอบเปิดเว็บแอปจอใหญ่ แต่ข้างนอกอยากได้แอปมือถือ",
-      modelPreference: "Live2D Model",
-      modelPreferenceNote: "ชอบลายเส้นอนิเมะ 2D ขยับลื่น ๆ และไม่กินแบตมือถือ",
-      naturalness: "เป็นธรรมชาติมาก เหมือนคุยกับคนจริง",
-      desiredFeatures: [
-        "ความจำระยะยาว (จำเรื่องที่เคยคุยได้)",
-        "สีหน้าและท่าทางตอบสนองตามอารมณ์",
-      ],
-      desiredFeaturesOther: "",
-      projectRating: 5,
-      satisfactionRating: 4,
-      issuesText: "ยังไม่มีปัญหาใหญ่ แต่อยากให้เพิ่มสติกเกอร์อารมณ์ตอนแชทอีกนิดค่ะ",
-      suggestionsText: "อยากให้มีโหมดเปลี่ยนชุดน้อง Vivian ตามเทศกาลด้วยค่ะ สู้ ๆ นะคะ Celestia Studio!",
-    },
-    {
-      id: "demo-2",
-      isDemo: true,
-      createdAt: "2026-11-20T14:22:00+07:00",
-      consent: "ยินยอม",
-      ageExact: 26,
-      ageDisplay: "26 ปี (25-34 ปี)",
-      ageRange: "25-34 ปี",
-      gender: "ชาย",
-      aiUsed: ["ChatGPT", "Gemini", "Claude"],
-      vivianImpression: "UI สบายตาดีครับ ตอบภาษาไทยค่อนข้างเป็นกันเองกว่าหลายเจ้าที่เคยลอง",
-      appPreference: "Web App (เว็บแอป)",
-      appPreferenceReason: "เปิดทำงานควบคู่บนคอมพิวเตอร์ได้ทันที ไม่ต้องลงโปรแกรมเพิ่ม",
-      modelPreference: "สลับได้ตามสเปค (Hybrid)",
-      modelPreferenceNote: "บนคอมอยากลอง 3D แต่บนมือถืออยากสลับเป็น Live2D ได้",
-      naturalness: "ค่อนข้างเป็นธรรมชาติ",
-      desiredFeatures: [
-        "ความจำระยะยาว (จำเรื่องที่เคยคุยได้)",
-        "ภาษาไทยเป็นกันเอง มีอารมณ์ขัน",
-      ],
-      desiredFeaturesOther: "",
-      projectRating: 4,
-      satisfactionRating: 4,
-      issuesText: "บางครั้งคำตอบยาว ๆ โหลดช้าเล็กน้อยช่วงเน็ตมือถือไม่เสถียร",
-      suggestionsText: "ถ้าเชื่อมปฏิทินช่วยเตือนนัดสำคัญด้วยจะสุดยอดมากครับ",
-    },
-    {
-      id: "demo-3",
-      isDemo: true,
-      createdAt: "2026-11-20T18:05:00+07:00",
-      consent: "ยินยอม",
-      ageExact: 19,
-      ageDisplay: "19 ปี (18-24 ปี)",
-      ageRange: "18-24 ปี",
-      gender: "อื่น ๆ (Non-binary)",
-      aiUsed: ["Character.AI", "Replika", "Vivian (Celestia Studio)"],
-      vivianImpression: "ดีไซน์คาแรกเตอร์โดดเด่นมาก อยากคุยด้วยทุกวันเลย",
-      appPreference: "Native App (แอปติดตั้ง)",
-      appPreferenceReason: "อยากได้แจ้งเตือนเวลา Vivian ทักมาตอนเช้าหรือก่อนนอน",
-      modelPreference: "Full 3D Model",
-      modelPreferenceNote: "ชอบ 3D แบบหมุนมุมกล้องดูท่าทางได้เต็มตัว",
-      naturalness: "ค่อนข้างเป็นธรรมชาติ",
-      desiredFeatures: [
-        "เสียงพูด (Voice Chat) ที่เป็นธรรมชาติ",
-        "ทักทาย/คอยดูแลในชีวิตประจำวัน",
-        "ปรับแต่งชุด ธีมห้อง และบุคลิกได้",
-      ],
-      desiredFeaturesOther: "",
-      projectRating: 5,
-      satisfactionRating: 3,
-      issuesText: "บนหน้าจอมือถือเล็ก ๆ ปุ่มตั้งค่าบางจุดชิดกันไปนิดหน่อย",
-      suggestionsText: "อยากให้มีห้องนอนหรือฉากหลังพาสเทลให้น้อง Vivian เดินเล่นได้ค่ะ",
-    },
-    {
-      id: "demo-4",
-      isDemo: true,
-      createdAt: "2026-11-21T09:30:00+07:00",
-      consent: "ยินยอม",
-      ageExact: 24,
-      ageDisplay: "24 ปี (18-24 ปี)",
-      ageRange: "18-24 ปี",
-      gender: "หญิง",
-      aiUsed: ["ChatGPT", "Gemini"],
-      vivianImpression: "น่ารักดีค่ะ แต่ยังอยากให้จำชื่อเล่นและเรื่องที่เล่าเมื่อวานได้แม่นขึ้น",
-      appPreference: "Native App (แอปติดตั้ง)",
-      appPreferenceReason: "เปิดจากหน้าจอมือถือสะดวกกว่าเข้าเว็บ",
-      modelPreference: "Live2D Model",
-      modelPreferenceNote: "",
-      naturalness: "ปานกลาง ยังดูเป็น AI อยู่บ้าง",
-      desiredFeatures: [
-        "ความจำระยะยาว (จำเรื่องที่เคยคุยได้)",
-        "ภาษาไทยเป็นกันเอง มีอารมณ์ขัน",
-      ],
-      desiredFeaturesOther: "",
-      projectRating: 3,
-      satisfactionRating: 3,
-      issuesText: "บางทีตอบทวนคำถามเดิมซ้ำนิดหน่อย",
-      suggestionsText: "เพิ่มคลังคำพูดภาษาไทยแบบวัยรุ่นน่ารัก ๆ จะทำให้ดูมีชีวิตชีวาขึ้นมากเลย",
-    },
-    {
-      id: "demo-5",
-      isDemo: true,
-      createdAt: "2026-11-21T11:10:00+07:00",
-      consent: "ไม่ยินยอม",
-      ageExact: null,
-      ageDisplay: "ไม่ระบุ",
-      ageRange: "ไม่ระบุ",
-      gender: "ไม่ระบุ",
-      aiUsed: ["ไม่เคยใช้งานมาก่อน"],
-      vivianImpression: "เพิ่งเคยลองแนว AI Companion ครั้งแรก น่ารักดีแต่ยังเขิน ๆ เวลาคุย",
-      appPreference: "Web App (เว็บแอป)",
-      appPreferenceReason: "ลองเล่นผ่านเว็บดูก่อนง่ายดี",
-      modelPreference: "Live2D Model",
-      modelPreferenceNote: "",
-      naturalness: "ค่อนข้างเป็นธรรมชาติ",
-      desiredFeatures: ["สีหน้าและท่าทางตอบสนองตามอารมณ์"],
-      desiredFeaturesOther: "",
-      projectRating: 4,
-      satisfactionRating: 3,
-      issuesText: "",
-      suggestionsText: "อยากให้มีคู่มือแนะนำคำสั่งเริ่มต้นสำหรับมือใหม่ค่ะ",
-    },
-  ];
-
   // ---------- DOM References ----------
   const tabBtnForm = document.getElementById("tabBtnForm");
   const tabBtnStats = document.getElementById("tabBtnStats");
@@ -185,11 +54,8 @@
   const dbStatusBadge = document.getElementById("dbStatusBadge");
   const formDbError = document.getElementById("formDbError");
   const statsDbError = document.getElementById("statsDbError");
-  const demoNotice = document.getElementById("demoNotice");
-  const btnLoadDemo = document.getElementById("btnLoadDemo");
   const btnExportCsv = document.getElementById("btnExportCsv");
   const btnExportJson = document.getElementById("btnExportJson");
-  const btnClearAllData = document.getElementById("btnClearAllData");
   const btnSubmitForm = document.getElementById("btnSubmitForm");
 
   // ---------- Cloudflare D1 API Client (No browser cache / localStorage) ----------
@@ -858,9 +724,6 @@
     const activeList = consentOnly ? responses.filter((r) => r.consent === "ยินยอม") : responses;
     const total = activeList.length;
 
-    const hasDemo = responses.some((r) => r.isDemo);
-    demoNotice.hidden = !hasDemo;
-
     const consentCount = responses.filter((r) => r.consent === "ยินยอม").length;
     const consentPct = responses.length ? Math.round((consentCount / responses.length) * 100) : 0;
 
@@ -1003,44 +866,6 @@
   }
 
   filterConsentOnly.addEventListener("change", renderStats);
-
-  btnLoadDemo.addEventListener("click", async () => {
-    if (!window.confirm("ต้องการเพิ่มข้อมูลตัวอย่าง (Demo) 5 ชุดลงฐานข้อมูล D1 จริงหรือไม่?")) return;
-    try {
-      const res = await fetch("/api/responses/demo", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ items: SAMPLE_RESPONSES }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || `เติมข้อมูลตัวอย่างลง D1 ไม่สำเร็จ (HTTP ${res.status})`);
-      }
-      responses = await fetchResponsesFromD1();
-      updateNavBadge();
-      renderStats();
-    } catch (err) {
-      setDbBanner(`เติมข้อมูลตัวอย่างไม่สำเร็จ: ${err.message}`);
-    }
-  });
-
-  btnClearAllData.addEventListener("click", async () => {
-    if (!responses.length) return;
-    const answer = window.prompt("เพื่อป้องกันการเผลอลบข้อมูลจริง กรุณาพิมพ์คำว่า DELETE เพื่อยืนยันการล้างข้อมูลทั้งหมดใน D1:");
-    if (answer !== "DELETE") return;
-    try {
-      const res = await fetch("/api/responses", { method: "DELETE" });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || `ล้างข้อมูล D1 ไม่สำเร็จ (HTTP ${res.status})`);
-      }
-      responses = await fetchResponsesFromD1();
-      updateNavBadge();
-      renderStats();
-    } catch (err) {
-      setDbBanner(`ล้างข้อมูลไม่สำเร็จ: ${err.message}`);
-    }
-  });
 
   // ---------- Export Helpers (CSV with UTF-8 BOM & JSON) ----------
   function downloadBlob(content, filename, mimeType) {
