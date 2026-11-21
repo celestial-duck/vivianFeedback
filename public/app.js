@@ -1,8 +1,6 @@
 (function () {
   "use strict";
 
-  const STORAGE_KEY = "celestia_vivian_survey_v2";
-
   const PROJECT_LABELS = {
     1: "ไม่ชอบ",
     2: "เฉย ๆ",
@@ -182,9 +180,11 @@
   const btnGoToStats = document.getElementById("btnGoToStats");
   const btnResetForm = document.getElementById("btnResetForm");
 
-  // Stats DOM
+  // Stats & DB DOM
   const filterConsentOnly = document.getElementById("filterConsentOnly");
   const dbStatusBadge = document.getElementById("dbStatusBadge");
+  const formDbError = document.getElementById("formDbError");
+  const statsDbError = document.getElementById("statsDbError");
   const demoNotice = document.getElementById("demoNotice");
   const btnLoadDemo = document.getElementById("btnLoadDemo");
   const btnExportCsv = document.getElementById("btnExportCsv");
@@ -192,63 +192,64 @@
   const btnClearAllData = document.getElementById("btnClearAllData");
   const btnSubmitForm = document.getElementById("btnSubmitForm");
 
-  // ---------- State & Cloudflare D1 API Client (with localStorage fallback) ----------
-  let storageBackend = "local"; // "d1" | "local"
+  // ---------- Cloudflare D1 API Client (No browser cache / localStorage) ----------
+  let dbConnected = false;
+  let lastDbError = "";
+  let responses = [];
 
-  function loadLocalResponses() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
+  function setDbBanner(message) {
+    lastDbError = message || "";
+    if (formDbError) {
+      formDbError.hidden = !lastDbError;
+      formDbError.textContent = lastDbError;
     }
-  }
-
-  function saveLocalResponses(list) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    } catch {
-      // Ignore storage quota errors gracefully
+    if (statsDbError) {
+      statsDbError.hidden = !lastDbError;
+      statsDbError.textContent = lastDbError;
     }
   }
 
   function updateDbBadge() {
     if (!dbStatusBadge) return;
-    if (storageBackend === "d1") {
+    dbStatusBadge.classList.remove("is-d1", "is-error");
+    if (dbConnected) {
       dbStatusBadge.textContent = "Cloudflare D1 (ออนไลน์)";
       dbStatusBadge.classList.add("is-d1");
+    } else if (lastDbError) {
+      dbStatusBadge.textContent = "D1 ยังไม่พร้อมเชื่อมต่อ";
+      dbStatusBadge.classList.add("is-error");
     } else {
-      dbStatusBadge.textContent = "Local Mode (ชั่วคราว)";
-      dbStatusBadge.classList.remove("is-d1");
+      dbStatusBadge.textContent = "กำลังเชื่อมต่อ D1...";
     }
   }
 
-  async function fetchResponsesFromServer() {
+  async function fetchResponsesFromD1() {
     if (window.location.protocol === "file:") {
-      storageBackend = "local";
+      dbConnected = false;
+      setDbBanner("ไม่สามารถเชื่อมต่อ Cloudflare D1 ผ่าน file:// ได้ กรุณาเปิดผ่าน URL ของ Cloudflare Workers หรือ npx wrangler dev");
       updateDbBadge();
-      return loadLocalResponses();
+      return [];
     }
     try {
       const res = await fetch("/api/responses", { cache: "no-store" });
-      if (!res.ok) throw new Error("API unavailable");
-      const data = await res.json();
-      if (Array.isArray(data.responses)) {
-        storageBackend = "d1";
-        updateDbBadge();
-        return data.responses;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `เชื่อมต่อ D1 ไม่สำเร็จ (HTTP ${res.status})`);
       }
-      throw new Error("Invalid payload");
-    } catch {
-      storageBackend = "local";
+      if (!Array.isArray(data.responses)) {
+        throw new Error("รูปแบบข้อมูลจาก /api/responses ไม่ถูกต้อง");
+      }
+      dbConnected = true;
+      setDbBanner("");
       updateDbBadge();
-      return loadLocalResponses();
+      return data.responses;
+    } catch (err) {
+      dbConnected = false;
+      setDbBanner(`ไม่สามารถโหลดข้อมูลจาก Cloudflare D1: ${err.message}`);
+      updateDbBadge();
+      return [];
     }
   }
-
-  let responses = loadLocalResponses();
 
   // ---------- Tab Navigation & Sliding Glider ----------
   function updateGlider(activeBtn) {
@@ -276,7 +277,7 @@
     updateGlider(isForm ? tabBtnForm : tabBtnStats);
     if (!isForm) {
       renderStats();
-      fetchResponsesFromServer().then((fresh) => {
+      fetchResponsesFromD1().then((fresh) => {
         responses = fresh;
         updateNavBadge();
         renderStats();
@@ -715,34 +716,23 @@
     const entry = collectFormData();
     const originalBtnHtml = btnSubmitForm.innerHTML;
     btnSubmitForm.disabled = true;
-    btnSubmitForm.textContent = "กำลังบันทึกคำตอบ...";
+    btnSubmitForm.textContent = "กำลังบันทึกลง D1...";
+    setDbBanner("");
 
     try {
-      if (window.location.protocol !== "file:") {
-        try {
-          const res = await fetch("/api/responses", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(entry),
-          });
-          if (res.ok) {
-            storageBackend = "d1";
-            updateDbBadge();
-            responses = await fetchResponsesFromServer();
-          } else {
-            throw new Error("POST failed");
-          }
-        } catch {
-          storageBackend = "local";
-          updateDbBadge();
-          responses.unshift(entry);
-          saveLocalResponses(responses);
-        }
-      } else {
-        responses.unshift(entry);
-        saveLocalResponses(responses);
+      const res = await fetch("/api/responses", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `บันทึกลง Cloudflare D1 ไม่สำเร็จ (HTTP ${res.status})`);
       }
 
+      dbConnected = true;
+      updateDbBadge();
+      responses = await fetchResponsesFromD1();
       updateNavBadge();
       launchConfetti();
 
@@ -755,6 +745,11 @@
       `;
       successModal.hidden = false;
       resetAllFormFields();
+    } catch (err) {
+      dbConnected = false;
+      setDbBanner(`บันทึกไม่สำเร็จ (ไม่ได้บันทึกลง browser cache): ${err.message}`);
+      updateDbBadge();
+      formDbError?.scrollIntoView({ behavior: "smooth", block: "center" });
     } finally {
       btnSubmitForm.disabled = false;
       btnSubmitForm.innerHTML = originalBtnHtml;
@@ -1010,45 +1005,39 @@
   filterConsentOnly.addEventListener("change", renderStats);
 
   btnLoadDemo.addEventListener("click", async () => {
-    if (storageBackend === "d1") {
-      try {
-        await fetch("/api/responses/demo", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ items: SAMPLE_RESPONSES }),
-        });
-        responses = await fetchResponsesFromServer();
-        updateNavBadge();
-        renderStats();
-        return;
-      } catch {
-        // Fallback below
+    try {
+      const res = await fetch("/api/responses/demo", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ items: SAMPLE_RESPONSES }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `เติมข้อมูลตัวอย่างลง D1 ไม่สำเร็จ (HTTP ${res.status})`);
       }
-    }
-    const existingIds = new Set(responses.map((r) => r.id));
-    const toAdd = SAMPLE_RESPONSES.filter((s) => !existingIds.has(s.id));
-    if (toAdd.length) {
-      responses = [...responses, ...toAdd];
-      saveLocalResponses(responses);
+      responses = await fetchResponsesFromD1();
       updateNavBadge();
+      renderStats();
+    } catch (err) {
+      setDbBanner(`เติมข้อมูลตัวอย่างไม่สำเร็จ: ${err.message}`);
     }
-    renderStats();
   });
 
   btnClearAllData.addEventListener("click", async () => {
     if (!responses.length) return;
-    if (window.confirm("ต้องการล้างข้อมูลคำตอบทั้งหมด (รวมถึงข้อมูลตัวอย่าง) ใช่หรือไม่?")) {
-      if (storageBackend === "d1") {
-        try {
-          await fetch("/api/responses", { method: "DELETE" });
-        } catch {
-          // Ignore and clear local state too
+    if (window.confirm("ต้องการล้างข้อมูลคำตอบทั้งหมดในฐานข้อมูล D1 ใช่หรือไม่?")) {
+      try {
+        const res = await fetch("/api/responses", { method: "DELETE" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || `ล้างข้อมูล D1 ไม่สำเร็จ (HTTP ${res.status})`);
         }
+        responses = await fetchResponsesFromD1();
+        updateNavBadge();
+        renderStats();
+      } catch (err) {
+        setDbBanner(`ล้างข้อมูลไม่สำเร็จ: ${err.message}`);
       }
-      responses = [];
-      saveLocalResponses(responses);
-      updateNavBadge();
-      renderStats();
     }
   });
 
@@ -1300,7 +1289,7 @@
   initScrollReveal();
   initAmbientParticles();
   requestAnimationFrame(() => updateGlider(tabBtnForm));
-  fetchResponsesFromServer().then((fresh) => {
+  fetchResponsesFromD1().then((fresh) => {
     responses = fresh;
     updateNavBadge();
     if (!viewStats.hidden) renderStats();

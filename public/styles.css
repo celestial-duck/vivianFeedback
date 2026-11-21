@@ -1191,6 +1191,23 @@ body {
   color: var(--mint-600);
 }
 
+.db-pill.is-error {
+  background: #ffe3e9;
+  color: #b8254a;
+}
+
+.db-error-banner {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: #fff0f3;
+  border: 1.5px solid #ffb3c4;
+  color: #9e1c3f;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
 .filter-toggle input {
   accent-color: var(--pink-400);
 }

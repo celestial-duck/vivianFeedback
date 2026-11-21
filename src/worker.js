@@ -1,9 +1,39 @@
 /**
  * Celestia Studio x Vivian Feedback Survey
- * Cloudflare Workers API + D1 Database + Static Assets
+ * Cloudflare Workers API + D1 SQLite Database + Static Assets
  */
 
 const VALID_CONSENT = new Set(["ยินยอม", "ไม่ยินยอม"]);
+
+const SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS survey_responses (
+    id TEXT PRIMARY KEY,
+    is_demo INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    consent TEXT NOT NULL CHECK (consent IN ('ยินยอม', 'ไม่ยินยอม')),
+    age_exact INTEGER,
+    age_range TEXT NOT NULL,
+    age_display TEXT NOT NULL,
+    gender TEXT NOT NULL,
+    ai_used TEXT NOT NULL,
+    vivian_impression TEXT NOT NULL DEFAULT '',
+    app_preference TEXT NOT NULL,
+    app_preference_reason TEXT NOT NULL DEFAULT '',
+    model_preference TEXT NOT NULL,
+    model_preference_note TEXT NOT NULL DEFAULT '',
+    naturalness TEXT NOT NULL,
+    desired_features TEXT NOT NULL,
+    desired_features_other TEXT NOT NULL DEFAULT '',
+    project_rating INTEGER NOT NULL CHECK (project_rating BETWEEN 1 AND 5),
+    satisfaction_rating INTEGER NOT NULL CHECK (satisfaction_rating BETWEEN 1 AND 4),
+    issues_text TEXT NOT NULL DEFAULT '',
+    suggestions_text TEXT NOT NULL DEFAULT ''
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_survey_created_at ON survey_responses(created_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_survey_consent ON survey_responses(consent)`,
+];
+
+let schemaInitialized = false;
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -13,6 +43,27 @@ function jsonResponse(data, status = 200) {
       "cache-control": "no-store",
     },
   });
+}
+
+function resolveD1(env) {
+  if (!env || typeof env !== "object") return { db: null, bindingName: null };
+  if (env.DB && typeof env.DB.prepare === "function") {
+    return { db: env.DB, bindingName: "DB" };
+  }
+  for (const [key, value] of Object.entries(env)) {
+    if (value && typeof value.prepare === "function" && typeof value.batch === "function") {
+      return { db: value, bindingName: key };
+    }
+  }
+  return { db: null, bindingName: null };
+}
+
+async function ensureSchema(db) {
+  if (schemaInitialized) return;
+  for (const sql of SCHEMA_STATEMENTS) {
+    await db.prepare(sql).run();
+  }
+  schemaInitialized = true;
 }
 
 function safeJsonParseArray(raw) {
@@ -153,31 +204,36 @@ export default {
       return new Response("Not Found", { status: 404 });
     }
 
-    if (!env.DB) {
+    const { db, bindingName } = resolveD1(env);
+    if (!db) {
       return jsonResponse(
         {
-          error: "D1 database binding 'DB' is not configured.",
+          error: "ไม่พบการเชื่อมต่อฐานข้อมูล Cloudflare D1 (กรุณาผูก D1 binding ชื่อ DB ใน Workers Settings)",
           code: "DB_NOT_BOUND",
+          availableBindings: env ? Object.keys(env) : [],
         },
         503
       );
     }
 
     try {
+      await ensureSchema(db);
+
       // GET /api/health
       if (url.pathname === "/api/health" && request.method === "GET") {
-        await env.DB.prepare("SELECT 1").first();
-        return jsonResponse({ ok: true, database: "cloudflare-d1" });
+        await db.prepare("SELECT 1").first();
+        return jsonResponse({ ok: true, database: "cloudflare-d1", bindingName });
       }
 
       // GET /api/responses
       if (url.pathname === "/api/responses" && request.method === "GET") {
-        const { results } = await env.DB.prepare(
-          "SELECT * FROM survey_responses ORDER BY created_at DESC"
-        ).all();
+        const { results } = await db
+          .prepare("SELECT * FROM survey_responses ORDER BY created_at DESC")
+          .all();
         const responses = (results || []).map(rowToEntry);
         return jsonResponse({
           responses,
+          bindingName,
           summary: {
             total: responses.length,
             projectRatingStats: computeStats(responses.map((r) => r.projectRating)),
@@ -236,11 +292,11 @@ export default {
           suggestionsText: String(body.suggestionsText || "").trim().slice(0, 2000),
         };
 
-        await insertEntry(env.DB, entry);
+        await insertEntry(db, entry);
         return jsonResponse({ ok: true, entry }, 201);
       }
 
-      // POST /api/responses/demo (batch insert demo items cleanly)
+      // POST /api/responses/demo
       if (url.pathname === "/api/responses/demo" && request.method === "POST") {
         let body;
         try {
@@ -252,24 +308,26 @@ export default {
         for (const item of items) {
           const err = validateSubmission(item);
           if (err) continue;
-          const existing = await env.DB.prepare("SELECT id FROM survey_responses WHERE id = ?")
+          const existing = await db
+            .prepare("SELECT id FROM survey_responses WHERE id = ?")
             .bind(String(item.id))
             .first();
           if (!existing) {
-            await insertEntry(env.DB, { ...item, isDemo: true });
+            await insertEntry(db, { ...item, isDemo: true });
           }
         }
         return jsonResponse({ ok: true });
       }
 
-      // DELETE /api/responses (clear all)
+      // DELETE /api/responses
       if (url.pathname === "/api/responses" && request.method === "DELETE") {
-        await env.DB.prepare("DELETE FROM survey_responses").run();
+        await db.prepare("DELETE FROM survey_responses").run();
         return jsonResponse({ ok: true });
       }
 
       return jsonResponse({ error: "API endpoint not found" }, 404);
     } catch (error) {
+      schemaInitialized = false;
       return jsonResponse(
         {
           error: error?.message || "Internal server error",
