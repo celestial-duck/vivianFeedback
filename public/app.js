@@ -1005,6 +1005,7 @@
   filterConsentOnly.addEventListener("change", renderStats);
 
   btnLoadDemo.addEventListener("click", async () => {
+    if (!window.confirm("ต้องการเพิ่มข้อมูลตัวอย่าง (Demo) 5 ชุดลงฐานข้อมูล D1 จริงหรือไม่?")) return;
     try {
       const res = await fetch("/api/responses/demo", {
         method: "POST",
@@ -1025,19 +1026,19 @@
 
   btnClearAllData.addEventListener("click", async () => {
     if (!responses.length) return;
-    if (window.confirm("ต้องการล้างข้อมูลคำตอบทั้งหมดในฐานข้อมูล D1 ใช่หรือไม่?")) {
-      try {
-        const res = await fetch("/api/responses", { method: "DELETE" });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.error || `ล้างข้อมูล D1 ไม่สำเร็จ (HTTP ${res.status})`);
-        }
-        responses = await fetchResponsesFromD1();
-        updateNavBadge();
-        renderStats();
-      } catch (err) {
-        setDbBanner(`ล้างข้อมูลไม่สำเร็จ: ${err.message}`);
+    const answer = window.prompt("เพื่อป้องกันการเผลอลบข้อมูลจริง กรุณาพิมพ์คำว่า DELETE เพื่อยืนยันการล้างข้อมูลทั้งหมดใน D1:");
+    if (answer !== "DELETE") return;
+    try {
+      const res = await fetch("/api/responses", { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `ล้างข้อมูล D1 ไม่สำเร็จ (HTTP ${res.status})`);
       }
+      responses = await fetchResponsesFromD1();
+      updateNavBadge();
+      renderStats();
+    } catch (err) {
+      setDbBanner(`ล้างข้อมูลไม่สำเร็จ: ${err.message}`);
     }
   });
 
