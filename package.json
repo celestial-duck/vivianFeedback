@@ -1,0 +1,16 @@
+{
+  "name": "vivian-feedback",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Celestia Studio x Vivian AI Companion feedback survey powered by Cloudflare Workers & D1",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply vivian-feedback-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply vivian-feedback-db --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

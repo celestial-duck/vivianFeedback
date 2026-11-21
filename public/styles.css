@@ -1175,6 +1175,22 @@ body {
   cursor: pointer;
 }
 
+.db-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--pink-100);
+  color: var(--pink-500);
+}
+
+.db-pill.is-d1 {
+  background: var(--mint-100);
+  color: var(--mint-600);
+}
+
 .filter-toggle input {
   accent-color: var(--pink-400);
 }

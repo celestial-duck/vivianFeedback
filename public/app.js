@@ -184,14 +184,18 @@
 
   // Stats DOM
   const filterConsentOnly = document.getElementById("filterConsentOnly");
+  const dbStatusBadge = document.getElementById("dbStatusBadge");
   const demoNotice = document.getElementById("demoNotice");
   const btnLoadDemo = document.getElementById("btnLoadDemo");
   const btnExportCsv = document.getElementById("btnExportCsv");
   const btnExportJson = document.getElementById("btnExportJson");
   const btnClearAllData = document.getElementById("btnClearAllData");
+  const btnSubmitForm = document.getElementById("btnSubmitForm");
 
-  // ---------- State Management ----------
-  function loadResponses() {
+  // ---------- State & Cloudflare D1 API Client (with localStorage fallback) ----------
+  let storageBackend = "local"; // "d1" | "local"
+
+  function loadLocalResponses() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
@@ -202,7 +206,7 @@
     }
   }
 
-  function saveResponses(list) {
+  function saveLocalResponses(list) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     } catch {
@@ -210,7 +214,41 @@
     }
   }
 
-  let responses = loadResponses();
+  function updateDbBadge() {
+    if (!dbStatusBadge) return;
+    if (storageBackend === "d1") {
+      dbStatusBadge.textContent = "Cloudflare D1 (ออนไลน์)";
+      dbStatusBadge.classList.add("is-d1");
+    } else {
+      dbStatusBadge.textContent = "Local Mode (ชั่วคราว)";
+      dbStatusBadge.classList.remove("is-d1");
+    }
+  }
+
+  async function fetchResponsesFromServer() {
+    if (window.location.protocol === "file:") {
+      storageBackend = "local";
+      updateDbBadge();
+      return loadLocalResponses();
+    }
+    try {
+      const res = await fetch("/api/responses", { cache: "no-store" });
+      if (!res.ok) throw new Error("API unavailable");
+      const data = await res.json();
+      if (Array.isArray(data.responses)) {
+        storageBackend = "d1";
+        updateDbBadge();
+        return data.responses;
+      }
+      throw new Error("Invalid payload");
+    } catch {
+      storageBackend = "local";
+      updateDbBadge();
+      return loadLocalResponses();
+    }
+  }
+
+  let responses = loadLocalResponses();
 
   // ---------- Tab Navigation & Sliding Glider ----------
   function updateGlider(activeBtn) {
@@ -238,6 +276,11 @@
     updateGlider(isForm ? tabBtnForm : tabBtnStats);
     if (!isForm) {
       renderStats();
+      fetchResponsesFromServer().then((fresh) => {
+        responses = fresh;
+        updateNavBadge();
+        renderStats();
+      });
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -665,25 +708,57 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
-  surveyForm.addEventListener("submit", (e) => {
+  surveyForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     const entry = collectFormData();
-    responses.unshift(entry);
-    saveResponses(responses);
-    updateNavBadge();
-    launchConfetti();
+    const originalBtnHtml = btnSubmitForm.innerHTML;
+    btnSubmitForm.disabled = true;
+    btnSubmitForm.textContent = "กำลังบันทึกคำตอบ...";
 
-    modalSummary.innerHTML = `
-      <div><strong>ความยินยอม:</strong> ${escapeHtml(entry.consent)}</div>
-      <div><strong>อายุ / เพศ:</strong> ${escapeHtml(entry.ageDisplay)} / ${escapeHtml(entry.gender)}</div>
-      <div><strong>แพลตฟอร์ม &amp; โมเดล:</strong> ${escapeHtml(entry.appPreference)} / ${escapeHtml(entry.modelPreference)}</div>
-      <div><strong>คะแนนโปรเจกต์:</strong> ${entry.projectRating} ดาว (${escapeHtml(PROJECT_LABELS[entry.projectRating])})</div>
-      <div><strong>ความพึงพอใจ:</strong> ${entry.satisfactionRating} ดาว (${escapeHtml(SATISFACTION_LABELS[entry.satisfactionRating])})</div>
-    `;
-    successModal.hidden = false;
-    resetAllFormFields();
+    try {
+      if (window.location.protocol !== "file:") {
+        try {
+          const res = await fetch("/api/responses", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(entry),
+          });
+          if (res.ok) {
+            storageBackend = "d1";
+            updateDbBadge();
+            responses = await fetchResponsesFromServer();
+          } else {
+            throw new Error("POST failed");
+          }
+        } catch {
+          storageBackend = "local";
+          updateDbBadge();
+          responses.unshift(entry);
+          saveLocalResponses(responses);
+        }
+      } else {
+        responses.unshift(entry);
+        saveLocalResponses(responses);
+      }
+
+      updateNavBadge();
+      launchConfetti();
+
+      modalSummary.innerHTML = `
+        <div><strong>ความยินยอม:</strong> ${escapeHtml(entry.consent)}</div>
+        <div><strong>อายุ / เพศ:</strong> ${escapeHtml(entry.ageDisplay)} / ${escapeHtml(entry.gender)}</div>
+        <div><strong>แพลตฟอร์ม &amp; โมเดล:</strong> ${escapeHtml(entry.appPreference)} / ${escapeHtml(entry.modelPreference)}</div>
+        <div><strong>คะแนนโปรเจกต์:</strong> ${entry.projectRating} ดาว (${escapeHtml(PROJECT_LABELS[entry.projectRating])})</div>
+        <div><strong>ความพึงพอใจ:</strong> ${entry.satisfactionRating} ดาว (${escapeHtml(SATISFACTION_LABELS[entry.satisfactionRating])})</div>
+      `;
+      successModal.hidden = false;
+      resetAllFormFields();
+    } finally {
+      btnSubmitForm.disabled = false;
+      btnSubmitForm.innerHTML = originalBtnHtml;
+    }
   });
 
   btnCloseModal.addEventListener("click", () => {
@@ -934,22 +1009,44 @@
 
   filterConsentOnly.addEventListener("change", renderStats);
 
-  btnLoadDemo.addEventListener("click", () => {
+  btnLoadDemo.addEventListener("click", async () => {
+    if (storageBackend === "d1") {
+      try {
+        await fetch("/api/responses/demo", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ items: SAMPLE_RESPONSES }),
+        });
+        responses = await fetchResponsesFromServer();
+        updateNavBadge();
+        renderStats();
+        return;
+      } catch {
+        // Fallback below
+      }
+    }
     const existingIds = new Set(responses.map((r) => r.id));
     const toAdd = SAMPLE_RESPONSES.filter((s) => !existingIds.has(s.id));
     if (toAdd.length) {
       responses = [...responses, ...toAdd];
-      saveResponses(responses);
+      saveLocalResponses(responses);
       updateNavBadge();
     }
     renderStats();
   });
 
-  btnClearAllData.addEventListener("click", () => {
+  btnClearAllData.addEventListener("click", async () => {
     if (!responses.length) return;
     if (window.confirm("ต้องการล้างข้อมูลคำตอบทั้งหมด (รวมถึงข้อมูลตัวอย่าง) ใช่หรือไม่?")) {
+      if (storageBackend === "d1") {
+        try {
+          await fetch("/api/responses", { method: "DELETE" });
+        } catch {
+          // Ignore and clear local state too
+        }
+      }
       responses = [];
-      saveResponses(responses);
+      saveLocalResponses(responses);
       updateNavBadge();
       renderStats();
     }
@@ -1199,7 +1296,13 @@
   // ---------- Initialize ----------
   updateNavBadge();
   updateProgress();
+  updateDbBadge();
   initScrollReveal();
   initAmbientParticles();
   requestAnimationFrame(() => updateGlider(tabBtnForm));
+  fetchResponsesFromServer().then((fresh) => {
+    responses = fresh;
+    updateNavBadge();
+    if (!viewStats.hidden) renderStats();
+  });
 })();

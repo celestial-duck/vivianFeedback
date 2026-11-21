@@ -1,3 +1,5 @@
 .DS_Store
 .taste-skill/
+.wrangler/
+.dev.vars
 node_modules/
