@@ -1103,6 +1103,10 @@
   initScrollReveal();
   initAmbientParticles();
   requestAnimationFrame(() => updateGlider(tabBtnForm));
+  document.fonts?.ready?.then(() => {
+    const active = document.querySelector(".mode-tab.is-active");
+    if (active) updateGlider(active);
+  });
   fetchResponsesFromD1().then((fresh) => {
     responses = fresh;
     updateNavBadge();
