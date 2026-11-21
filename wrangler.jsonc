@@ -12,6 +12,7 @@
     {
       "binding": "DB",
       "database_name": "vivian-feedback-db",
+      "database_id": "00382acf-fcb2-41e5-ad6a-8eed3672ffb3",
       "migrations_dir": "migrations"
     }
   ]
