@@ -794,6 +794,18 @@
     <p>พัฒนาด้วยความตั้งใจเพื่อ <strong>Celestia Studio</strong> : โครงการ <strong>Vivian AI</strong></p>
   </footer>
 
+  <!-- Floating Smooth Back-to-Top Button -->
+  <button
+    type="button"
+    id="scrollTopBtn"
+    class="scroll-top-btn"
+    aria-label="เลื่อนกลับขึ้นด้านบน"
+  >
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 15l-6-6-6 6" />
+    </svg>
+  </button>
+
   <!-- Success Submission Modal -->
   <div class="modal-backdrop" id="successModal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-card">
@@ -805,6 +817,22 @@
       <h2 id="modalTitle">ส่งเรียบร้อยแล้วค่า!</h2>
       <p id="modalDesc">ขอบคุณแกมาก ๆ เลยนะที่แวะมาช่วยแชร์ไอเดียให้ทีม Celestia Studio กับน้อง Vivian</p>
       <div class="modal-summary" id="modalSummary"></div>
+      <div class="modal-vivian-cta">
+        <p class="modal-cta-title">อยากรู้ไหมว่ามีอะไรบ้าง</p>
+        <a
+          href="https://celestia-sora.github.io/vivianpage/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-vivian-link"
+          id="btnVivianPage"
+        >
+          <span>ไปส่องโปรเจกต์ Vivian กันเลย</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 17L17 7" />
+            <path d="M8 7h9v9" />
+          </svg>
+        </a>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-ghost" id="btnCloseModal">กรอกอีกสักรอบ</button>
         <button type="button" class="btn-primary" id="btnGoToStats">แอบไปดูผลสรุป</button>

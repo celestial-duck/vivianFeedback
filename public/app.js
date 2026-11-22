@@ -48,6 +48,7 @@
   const btnCloseModal = document.getElementById("btnCloseModal");
   const btnGoToStats = document.getElementById("btnGoToStats");
   const btnResetForm = document.getElementById("btnResetForm");
+  const scrollTopBtn = document.getElementById("scrollTopBtn");
 
   // Stats & DB DOM
   const filterConsentOnly = document.getElementById("filterConsentOnly");
@@ -127,6 +128,74 @@
     }
   }
 
+  // ---------- Smooth Scrolling Helpers ----------
+  let activeScrollRaf = null;
+
+  function smoothScrollTo(targetY, duration = 560) {
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const clampedY = Math.max(0, Math.min(targetY, document.documentElement.scrollHeight - window.innerHeight));
+    if (prefersReduced || duration <= 0) {
+      window.scrollTo(0, clampedY);
+      return;
+    }
+
+    if (activeScrollRaf) {
+      cancelAnimationFrame(activeScrollRaf);
+      activeScrollRaf = null;
+    }
+
+    const startY = window.scrollY || window.pageYOffset;
+    const diff = clampedY - startY;
+    if (Math.abs(diff) < 2) return;
+
+    const startTime = performance.now();
+    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      window.scrollTo(0, startY + diff * easeInOutCubic(progress));
+      if (progress < 1) {
+        activeScrollRaf = requestAnimationFrame(step);
+      } else {
+        activeScrollRaf = null;
+      }
+    }
+
+    activeScrollRaf = requestAnimationFrame(step);
+  }
+
+  function smoothScrollToElement(el, offset = 92) {
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const targetY = (window.scrollY || window.pageYOffset) + rect.top - offset;
+    smoothScrollTo(targetY, 540);
+  }
+
+  // Cancel programmatic scroll if the user scrolls manually
+  ["wheel", "touchstart"].forEach((evt) => {
+    window.addEventListener(
+      evt,
+      () => {
+        if (activeScrollRaf) {
+          cancelAnimationFrame(activeScrollRaf);
+          activeScrollRaf = null;
+        }
+      },
+      { passive: true }
+    );
+  });
+
+  // Smooth Back-to-Top visibility toggle
+  if (scrollTopBtn) {
+    const updateScrollTopVisibility = () => {
+      const show = (window.scrollY || window.pageYOffset) > 320;
+      scrollTopBtn.classList.toggle("is-visible", show);
+    };
+    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
+    scrollTopBtn.addEventListener("click", () => smoothScrollTo(0, 620));
+  }
+
   // ---------- Tab Navigation & Sliding Glider ----------
   function updateGlider(activeBtn) {
     if (!tabGlider || !activeBtn) return;
@@ -159,7 +228,7 @@
         renderStats();
       });
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    smoothScrollTo(0, 500);
   }
 
   tabBtnForm.addEventListener("click", () => switchTab("form"));
@@ -502,7 +571,7 @@
     }
 
     if (firstErrorEl) {
-      firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      smoothScrollToElement(firstErrorEl, 100);
       return false;
     }
     return true;
@@ -582,7 +651,7 @@
 
   btnResetForm.addEventListener("click", () => {
     resetAllFormFields();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    smoothScrollTo(0, 560);
   });
 
   surveyForm.addEventListener("submit", async (e) => {
@@ -625,7 +694,7 @@
       dbConnected = false;
       setDbBanner(`บันทึกไม่สำเร็จ (ไม่ได้บันทึกลง browser cache): ${err.message}`);
       updateDbBadge();
-      formDbError?.scrollIntoView({ behavior: "smooth", block: "center" });
+      smoothScrollToElement(formDbError, 120);
     } finally {
       btnSubmitForm.disabled = false;
       btnSubmitForm.innerHTML = originalBtnHtml;
@@ -634,7 +703,7 @@
 
   btnCloseModal.addEventListener("click", () => {
     successModal.hidden = true;
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    smoothScrollTo(0, 560);
   });
 
   btnGoToStats.addEventListener("click", () => {
